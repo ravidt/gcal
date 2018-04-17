@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Google Calender App</title>
+
+		<!-- Favicon -->
+		<link rel="shortcut icon" href="favicon-url">
+
+		<!-- Bootstrap -->
+		<link href="css/style.css" rel="stylesheet">
+
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+		<![endif]-->
+	</head>
+	<body>
+		<!--[if lt IE 9]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Page Wrap -->
+        <div id="wrap">
+
+        	<div class="container" ng-app="g_calender" ng-controller="GCalenderController">
+        		
+        		<div class="jumbotron text-center">
+
+					<h1>GOOGLE CALENDER APP</h1>
+				
+					
+
+					<div class="row" id="date-select-container" ng-show="api_authorized">
+						<div class="col-md-6 col-md-offset-3">
+							<h3>Select a date to show events</h3>
+							<form class="form-horizontal" name="dateForm">
+								<div class="form-group">
+									<label for="date" class="col-sm-4 control-label">Choose Date</label>
+									<div class="col-sm-8">
+										<input
+											class="form-control" 
+											name="date" 
+											id="date"
+											ng-model="date"
+											type="date"
+											min="1970-01-01"
+											required
+											ng-change="dateForm.$dirty && dateForm.$valid && showEvents(dateForm)"
+											ng-disabled="dateForm.isSubmitting"
+										>
+										<span style="color:red" ng-show="dateForm.date.$dirty && dateForm.date.$invalid">
+											<span ng-show="dateForm.date.$error.required">Select a date to show events</span>
+											<span ng-show="dateForm.date.$error.min">Select a date after 1970-01-01</span>
+										</span>
+									</div>
+									
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<div class="row" ng-hide="api_authorized">
+						<p>Authorize access to calendar</p>
+						<button class="btn btn-lg btn-primary" ng-click="authorizeAccess()">Authorize App</button>
+					</div>
+
+				</div>
+
+
+				<h3 ng-show="dateForm.isSubmitting" class="text-center">Fetching events...</h3>
+
+				<p ng-if="dateForm.isSubmitting == false && events == null" class="alert alert-danger">You have no events for <strong>{{date.toDateString()}}</strong></p>
+
+				<div class="jumbotron" ng-if="dateForm.isSubmitting == false">
+					<div class="row">
+						<div class="col-md-6 col-md-offset-3">
+							<form class="form-horizontal" name="newEventForm">
+								<h3 class="text-center">Add a New Event for {{date.toDateString()}}</h3>
+								<div class="form-group">
+									<label for="summary" class="col-sm-4 control-label">Event Summary</label>
+									<div class="col-sm-8">
+										<textarea class="form-control" id="summary" name="summary" ng-model="newEvent.summary" placeholder="Write a summary for the event" required></textarea>
+										<span style="color:red" ng-show="newEventForm.summary.$dirty && newEventForm.summary.$invalid">
+											<span ng-show="newEventForm.summary.$error.required">Write a summary for the event</span>
+										</span>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="description" class="col-sm-4 control-label">Event Description</label>
+									<div class="col-sm-8">
+										<textarea class="form-control" id="description" name="description" ng-model="newEvent.description" placeholder="Write a description for the event" required></textarea>
+										<span style="color:red" ng-show="newEventForm.description.$dirty && newEventForm.description.$invalid">
+											<span ng-show="newEventForm.description.$error.required">Write a description for the event</span>
+										</span>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="location" class="col-sm-4 control-label">Event Location</label>
+									<div class="col-sm-8">
+										<input class="form-control" id="location" name="location" ng-model="newEvent.location" placeholder="Where will the event take place?" required>
+										<span style="color:red" ng-show="newEventForm.location.$dirty && newEventForm.location.$invalid">
+											<span ng-show="newEventForm.location.$error.required">Write a location for the event</span>
+										</span>
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="col-sm-offset-4 col-sm-8">
+										<button class="btn btn-default" ng-click="newEventForm.$valid && addEvent()">Add Event</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+				<div class="jumbotron" ng-if="dateForm.isSubmitting == false && events.length != null">
+
+					<div class="row" class="table-responsive">
+						
+						<h2 class="text-center">Events for {{date.toDateString()}}</h2>
+
+						<table class="table table-bordered table-striped">
+
+							<thead>
+								<td><strong>#</strong></td>
+								<td><strong>Date</strong></td>
+								<td><strong>Summary</strong></td>
+								<td><strong>Description</strong></td>
+								<td><strong>Location</strong></td>
+							</thead>
+
+							<tr ng-repeat="event in events">
+								<td>{{ $index + 1 }}</td>
+								<td>{{event.start.date}}</td>
+								<td>{{event.summary}}</td>
+								<td>{{event.description}}</td>
+								<td>{{event.location}}</td>
+							</tr>
+
+						</table>
+					</div>	
+
+				</div>
+
+        	</div>
+
+        	
+
+
+        </div>
+        <!-- Page Wrap Ends -->
+
+         <!-- cdn for modernizr, if you haven't included it already -->
+        <!-- Used webshims to make input type=date work for safari, firefox, ie  -->
+		<script src="http://cdn.jsdelivr.net/webshim/1.12.4/extras/modernizr-custom.js"></script>
+		<!-- polyfiller file to detect and load polyfills -->
+		<script src="http://cdn.jsdelivr.net/webshim/1.12.4/polyfiller.js"></script>
+		<script>
+		  webshims.setOptions('waitReady', false);
+		  webshims.setOptions('forms-ext', {types: 'date'});
+		  webshims.polyfill('forms forms-ext');
+		</script>
+
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<!-- Include Angular JS from CDN -->
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="js/bootstrap.min.js"></script>
+		<!-- Angular -->
+		<script src="js/angular/g_calender_controller.js"></script>
+		<script src="js/angular/g_calender_service.js"></script>
+		<!-- Google Calender API -->
+		<script type="text/javascript">
+			function checkAuth() {
+				var $injector = angular.bootstrap(document, ['g_calender']);
+				//console.log('Angualar bootstrap complete');         
+
+
+				var $scope = angular.element('body').scope();
+				// console.log('Find scope', $scope)
+
+				$scope.$apply(function(){
+					//console.log("API Loaded");
+				})
+
+				var $controller = $injector.get('$controller');        
+				var controller = $controller('GCalenderController', {
+					$scope: $scope
+				});
+
+				// Call CheckAuth controller method
+				$scope.checkAuth();
+			}
+		</script>
+		<script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
+	</body>
+</html>
